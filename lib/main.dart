@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'course_state.dart';
 
 void main() {
   runApp(const CourseExplorerApp());
@@ -7,6 +8,14 @@ void main() {
 
 const String studentName = 'Wayan Muizul Rozzak';
 const String studentId = '2415051111';
+
+const List<Map<String, String>> courses = [
+  {'id': '1', 'title': 'Flutter Dasar', 'category': 'Mobile Development'},
+  {'id': '2', 'title': 'Pemrograman Dart', 'category': 'Programming'},
+  {'id': '3', 'title': 'UI/UX Design', 'category': 'User Interface'},
+  {'id': '4', 'title': 'State Management', 'category': 'Flutter Architecture'},
+  {'id': '5', 'title': 'Database Dasar', 'category': 'Data Management'},
+];
 
 class CourseExplorerApp extends StatelessWidget {
   const CourseExplorerApp({super.key});
@@ -25,15 +34,33 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-class CourseExplorerPage extends StatelessWidget {
+class CourseExplorerPage extends StatefulWidget {
   const CourseExplorerPage({super.key});
+
+  @override
+  State<CourseExplorerPage> createState() => _CourseExplorerPageState();
+}
+
+class _CourseExplorerPageState extends State<CourseExplorerPage> {
+  // Satu object state digunakan oleh kedua bagian UI.
+  late final CourseState courseState;
+
+  @override
+  void initState() {
+    super.initState();
+    courseState = CourseState();
+  }
+
+  @override
+  void dispose() {
+    courseState.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Course Explorer'),
-      ),
+      appBar: AppBar(title: const Text('Course Explorer')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -54,163 +81,117 @@ class CourseExplorerPage extends StatelessWidget {
                   SizedBox(height: 4),
                   Text('NIM: $studentId'),
                   SizedBox(height: 8),
-                  Text('Praktikum Pertemuan 6 - Tahap 4'),
+                  Text('Praktikum Pertemuan 6 - Tahap 5'),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          const FavoriteCounter(),
-
-          const SizedBox(height: 16),
-
-          const Text(
-            'Daftar Kursus',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-
-          const CourseTile(
-            title: 'Flutter Dasar',
-            category: 'Mobile Development',
-            icon: Icons.phone_android,
-          ),
-          const CourseTile(
-            title: 'Pemrograman Dart',
-            category: 'Programming',
-            icon: Icons.code,
-          ),
-          const CourseTile(
-            title: 'UI/UX Design',
-            category: 'User Interface',
-            icon: Icons.design_services,
-          ),
-          const CourseTile(
-            title: 'State Management',
-            category: 'Flutter Architecture',
-            icon: Icons.account_tree,
-          ),
-          const CourseTile(
-            title: 'Database Dasar',
-            category: 'Data Management',
-            icon: Icons.storage,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class FavoriteCounter extends StatefulWidget {
-  const FavoriteCounter({super.key});
-
-  @override
-  State<FavoriteCounter> createState() => _FavoriteCounterState();
-}
-
-class _FavoriteCounterState extends State<FavoriteCounter> {
-  // ValueNotifier menyimpan satu nilai yang dapat diamati.
-  late final ValueNotifier<int> favoriteCount;
-
-  @override
-  void initState() {
-    super.initState();
-    favoriteCount = ValueNotifier<int>(0);
-  }
-
-  @override
-  void dispose() {
-    favoriteCount.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Eksperimen ValueNotifier',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-
-            // Hanya bagian ini yang mendengarkan perubahan nilai.
-            ValueListenableBuilder<int>(
-              valueListenable: favoriteCount,
-              builder: (context, value, child) {
-                return Row(
-                  children: [
-                    const Icon(Icons.favorite, color: Colors.red, size: 30),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Jumlah Favorit: $value',
-                        style: const TextStyle(
+          // Listener pertama: daftar kursus.
+          AnimatedBuilder(
+            animation: courseState,
+            builder: (context, child) {
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Daftar Kursus',
+                        style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                      const SizedBox(height: 8),
+                      ...courses.map((course) {
+                        final id = course['id']!;
+                        final isFavorite = courseState.isFavorite(id);
 
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      favoriteCount.value++;
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('+1 Favorit'),
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(course['title']!),
+                          subtitle: Text(course['category']!),
+                          trailing: IconButton(
+                            tooltip: isFavorite
+                                ? 'Hapus dari favorit'
+                                : 'Tambahkan ke favorit',
+                            onPressed: () {
+                              courseState.toggleFavorite(id);
+                            },
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : null,
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  onPressed: () {
-                    favoriteCount.value = 0;
-                  },
-                  child: const Text('Reset'),
+              );
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // Listener kedua: ringkasan favorit.
+          AnimatedBuilder(
+            animation: courseState,
+            builder: (context, child) {
+              final favoriteCourses = courses
+                  .where(
+                    (course) =>
+                        courseState.isFavorite(course['id']!),
+                  )
+                  .toList();
+
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Kursus Favorit (${courseState.favorites.length})',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (favoriteCourses.isEmpty)
+                        const Text('Belum ada kursus favorit.')
+                      else
+                        ...favoriteCourses.map(
+                          (course) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(course['title']!),
+                            trailing: IconButton(
+                              tooltip: 'Hapus dari favorit',
+                              onPressed: () {
+                                courseState.toggleFavorite(
+                                  course['id']!,
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CourseTile extends StatelessWidget {
-  final String title;
-  final String category;
-  final IconData icon;
-
-  const CourseTile({
-    super.key,
-    required this.title,
-    required this.category,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(icon),
-        ),
-        title: Text(title),
-        subtitle: Text(category),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
