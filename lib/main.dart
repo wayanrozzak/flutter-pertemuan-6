@@ -8,6 +8,34 @@ void main() {
 const String studentName = 'Wayan Muizul Rozzak';
 const String studentId = '2415051111';
 
+const List<Map<String, String>> courses = [
+  {
+    'id': '1',
+    'title': 'Flutter Dasar',
+    'category': 'Mobile Development',
+  },
+  {
+    'id': '2',
+    'title': 'Pemrograman Dart',
+    'category': 'Programming',
+  },
+  {
+    'id': '3',
+    'title': 'UI/UX Design',
+    'category': 'User Interface',
+  },
+  {
+    'id': '4',
+    'title': 'State Management',
+    'category': 'Flutter Architecture',
+  },
+  {
+    'id': '5',
+    'title': 'Database Dasar',
+    'category': 'Data Management',
+  },
+];
+
 class CourseExplorerApp extends StatelessWidget {
   const CourseExplorerApp({super.key});
 
@@ -17,9 +45,7 @@ class CourseExplorerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Course Explorer',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
       home: const CourseExplorerPage(),
@@ -27,6 +53,7 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
+// PARENT: satu sumber data favorites.
 class CourseExplorerPage extends StatefulWidget {
   const CourseExplorerPage({super.key});
 
@@ -36,247 +63,173 @@ class CourseExplorerPage extends StatefulWidget {
 }
 
 class _CourseExplorerPageState extends State<CourseExplorerPage> {
-  // LOCAL STATE: hanya digunakan pada halaman ini.
-  final Set<int> _favoriteCourses = {};
-  int? _expandedCourseId;
+  final Set<String> _favorites = {};
 
-  final List<Map<String, dynamic>> _courses = [
-    {
-      'id': 1,
-      'title': 'Flutter Dasar',
-      'category': 'Mobile Development',
-      'description':
-          'Belajar widget, layout, dan dasar pembuatan aplikasi Flutter.',
-      'icon': Icons.phone_android,
-    },
-    {
-      'id': 2,
-      'title': 'Pemrograman Dart',
-      'category': 'Programming',
-      'description':
-          'Mengenal variabel, fungsi, class, dan pemrograman Dart.',
-      'icon': Icons.code,
-    },
-    {
-      'id': 3,
-      'title': 'UI/UX Design',
-      'category': 'User Interface',
-      'description':
-          'Mempelajari prinsip desain antarmuka dan pengalaman pengguna.',
-      'icon': Icons.design_services,
-    },
-    {
-      'id': 4,
-      'title': 'State Management',
-      'category': 'Flutter Architecture',
-      'description':
-          'Memahami local state, shared state, dan pengelolaan data.',
-      'icon': Icons.account_tree,
-    },
-    {
-      'id': 5,
-      'title': 'Database Dasar',
-      'category': 'Data Management',
-      'description':
-          'Mengenal konsep penyimpanan dan pengelolaan data aplikasi.',
-      'icon': Icons.storage,
-    },
-  ];
-
-  // Contoh LOCAL STATE menggunakan setState().
-  void _toggleFavorite(int courseId) {
+  void _toggleFavorite(String courseId) {
     setState(() {
-      if (_favoriteCourses.contains(courseId)) {
-        _favoriteCourses.remove(courseId);
+      if (_favorites.contains(courseId)) {
+        _favorites.remove(courseId);
       } else {
-        _favoriteCourses.add(courseId);
+        _favorites.add(courseId);
       }
-    });
-  }
-
-  void _toggleDetails(int courseId) {
-    setState(() {
-      _expandedCourseId =
-          _expandedCourseId == courseId ? null : courseId;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Course Explorer',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: false,
-      ),
-      body: Column(
+      appBar: AppBar(title: const Text('Course Explorer')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          // Identitas mahasiswa untuk bukti praktikum.
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .primaryContainer,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  studentName,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text('NIM: $studentId'),
-                SizedBox(height: 8),
-                Text(
-                  'Praktikum Pertemuan 6 - Tahap 1',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Daftar Kursus',
+          Card(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    studentName,
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                Chip(
-                  avatar: const Icon(
-                    Icons.favorite,
-                    size: 18,
-                    color: Colors.red,
-                  ),
-                  label: Text('${_favoriteCourses.length} Favorit'),
-                ),
-              ],
+                  SizedBox(height: 4),
+                  Text('NIM: $studentId'),
+                  SizedBox(height: 8),
+                  Text('Praktikum Pertemuan 6 - Tahap 2'),
+                ],
+              ),
             ),
           ),
+          const SizedBox(height: 12),
 
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              itemCount: _courses.length,
-              itemBuilder: (context, index) {
-                final course = _courses[index];
-                final int id = course['id'] as int;
-                final bool isFavorite =
-                    _favoriteCourses.contains(id);
-                final bool isExpanded =
-                    _expandedCourseId == id;
+          // Nilai dan callback diteruskan ke child pertama.
+          CourseListChild(
+            favorites: _favorites,
+            onToggleFavorite: _toggleFavorite,
+          ),
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 26,
-                              child: Icon(
-                                course['icon'] as IconData,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    course['title'] as String,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    course['category'] as String,
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              tooltip: isFavorite
-                                  ? 'Hapus dari favorit'
-                                  : 'Tambahkan ke favorit',
-                              onPressed: () =>
-                                  _toggleFavorite(id),
-                              icon: Icon(
-                                isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: isFavorite
-                                    ? Colors.red
-                                    : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: () => _toggleDetails(id),
-                            icon: Icon(
-                              isExpanded
-                                  ? Icons.expand_less
-                                  : Icons.expand_more,
-                            ),
-                            label: Text(
-                              isExpanded
-                                  ? 'Sembunyikan detail'
-                                  : 'Lihat detail',
-                            ),
-                          ),
-                        ),
-                        if (isExpanded)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              course['description'] as String,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+          const SizedBox(height: 16),
+
+          // Nilai dan callback yang sama diteruskan lagi
+          // ke child kedua.
+          FavoriteSummaryChild(
+            favorites: _favorites,
+            onToggleFavorite: _toggleFavorite,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// CHILD 1: menampilkan semua kursus.
+class CourseListChild extends StatelessWidget {
+  final Set<String> favorites;
+  final ValueChanged<String> onToggleFavorite;
+
+  const CourseListChild({
+    super.key,
+    required this.favorites,
+    required this.onToggleFavorite,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Daftar Kursus',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...courses.map((course) {
+              final id = course['id']!;
+              final isFavorite = favorites.contains(id);
+
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(course['title']!),
+                subtitle: Text(course['category']!),
+                trailing: IconButton(
+                  onPressed: () => onToggleFavorite(id),
+                  icon: Icon(
+                    isFavorite
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : null,
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// CHILD 2: memakai favorites yang sama untuk ringkasan.
+class FavoriteSummaryChild extends StatelessWidget {
+  final Set<String> favorites;
+  final ValueChanged<String> onToggleFavorite;
+
+  const FavoriteSummaryChild({
+    super.key,
+    required this.favorites,
+    required this.onToggleFavorite,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final favoriteCourses = courses
+        .where((course) => favorites.contains(course['id']))
+        .toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Kursus Favorit (${favorites.length})',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (favoriteCourses.isEmpty)
+              const Text('Belum ada kursus favorit.')
+            else
+              ...favoriteCourses.map(
+                (course) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(course['title']!),
+                  trailing: IconButton(
+                    tooltip: 'Hapus dari favorit',
+                    onPressed: () =>
+                        onToggleFavorite(course['id']!),
+                    icon: const Icon(
+                      Icons.remove_circle_outline,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
