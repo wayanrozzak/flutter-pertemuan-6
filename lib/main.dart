@@ -1,121 +1,282 @@
+
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CourseExplorerApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+const String studentName = 'Wayan Muizul Rozzak';
+const String studentId = '2415051111';
 
-  // This widget is the root of your application.
+class CourseExplorerApp extends StatelessWidget {
+  const CourseExplorerApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Course Explorer',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+        ),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const CourseExplorerPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class CourseExplorerPage extends StatefulWidget {
+  const CourseExplorerPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CourseExplorerPage> createState() =>
+      _CourseExplorerPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _CourseExplorerPageState extends State<CourseExplorerPage> {
+  // LOCAL STATE: hanya digunakan pada halaman ini.
+  final Set<int> _favoriteCourses = {};
+  int? _expandedCourseId;
 
-  void _incrementCounter() {
+  final List<Map<String, dynamic>> _courses = [
+    {
+      'id': 1,
+      'title': 'Flutter Dasar',
+      'category': 'Mobile Development',
+      'description':
+          'Belajar widget, layout, dan dasar pembuatan aplikasi Flutter.',
+      'icon': Icons.phone_android,
+    },
+    {
+      'id': 2,
+      'title': 'Pemrograman Dart',
+      'category': 'Programming',
+      'description':
+          'Mengenal variabel, fungsi, class, dan pemrograman Dart.',
+      'icon': Icons.code,
+    },
+    {
+      'id': 3,
+      'title': 'UI/UX Design',
+      'category': 'User Interface',
+      'description':
+          'Mempelajari prinsip desain antarmuka dan pengalaman pengguna.',
+      'icon': Icons.design_services,
+    },
+    {
+      'id': 4,
+      'title': 'State Management',
+      'category': 'Flutter Architecture',
+      'description':
+          'Memahami local state, shared state, dan pengelolaan data.',
+      'icon': Icons.account_tree,
+    },
+    {
+      'id': 5,
+      'title': 'Database Dasar',
+      'category': 'Data Management',
+      'description':
+          'Mengenal konsep penyimpanan dan pengelolaan data aplikasi.',
+      'icon': Icons.storage,
+    },
+  ];
+
+  // Contoh LOCAL STATE menggunakan setState().
+  void _toggleFavorite(int courseId) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      if (_favoriteCourses.contains(courseId)) {
+        _favoriteCourses.remove(courseId);
+      } else {
+        _favoriteCourses.add(courseId);
+      }
+    });
+  }
+
+  void _toggleDetails(int courseId) {
+    setState(() {
+      _expandedCourseId =
+          _expandedCourseId == courseId ? null : courseId;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        title: const Text(
+          'Course Explorer',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        centerTitle: false,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      body: Column(
+        children: [
+          // Identitas mahasiswa untuk bukti praktikum.
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context)
+                  .colorScheme
+                  .primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  studentName,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text('NIM: $studentId'),
+                SizedBox(height: 8),
+                Text(
+                  'Praktikum Pertemuan 6 - Tahap 1',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Daftar Kursus',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Chip(
+                  avatar: const Icon(
+                    Icons.favorite,
+                    size: 18,
+                    color: Colors.red,
+                  ),
+                  label: Text('${_favoriteCourses.length} Favorit'),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              itemCount: _courses.length,
+              itemBuilder: (context, index) {
+                final course = _courses[index];
+                final int id = course['id'] as int;
+                final bool isFavorite =
+                    _favoriteCourses.contains(id);
+                final bool isExpanded =
+                    _expandedCourseId == id;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 26,
+                              child: Icon(
+                                course['icon'] as IconData,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    course['title'] as String,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    course['category'] as String,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: isFavorite
+                                  ? 'Hapus dari favorit'
+                                  : 'Tambahkan ke favorit',
+                              onPressed: () =>
+                                  _toggleFavorite(id),
+                              icon: Icon(
+                                isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: isFavorite
+                                    ? Colors.red
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            onPressed: () => _toggleDetails(id),
+                            icon: Icon(
+                              isExpanded
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                            ),
+                            label: Text(
+                              isExpanded
+                                  ? 'Sembunyikan detail'
+                                  : 'Lihat detail',
+                            ),
+                          ),
+                        ),
+                        if (isExpanded)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              course['description'] as String,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
