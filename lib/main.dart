@@ -8,14 +8,6 @@ void main() {
 const String studentName = 'Wayan Muizul Rozzak';
 const String studentId = '2415051111';
 
-const List<Map<String, String>> courses = [
-  {'id': '1', 'title': 'Flutter Dasar', 'category': 'Mobile Development'},
-  {'id': '2', 'title': 'Pemrograman Dart', 'category': 'Programming'},
-  {'id': '3', 'title': 'UI/UX Design', 'category': 'User Interface'},
-  {'id': '4', 'title': 'State Management', 'category': 'Flutter Architecture'},
-  {'id': '5', 'title': 'Database Dasar', 'category': 'Data Management'},
-];
-
 class CourseExplorerApp extends StatelessWidget {
   const CourseExplorerApp({super.key});
 
@@ -33,32 +25,15 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-// PARENT: satu-satunya pemilik state favorites.
-class CourseExplorerPage extends StatefulWidget {
+class CourseExplorerPage extends StatelessWidget {
   const CourseExplorerPage({super.key});
-
-  @override
-  State<CourseExplorerPage> createState() => _CourseExplorerPageState();
-}
-
-class _CourseExplorerPageState extends State<CourseExplorerPage> {
-  final Set<String> _favorites = {};
-
-  // Semua perubahan favorites dilakukan di parent.
-  void _toggleFavorite(String courseId) {
-    setState(() {
-      if (_favorites.contains(courseId)) {
-        _favorites.remove(courseId);
-      } else {
-        _favorites.add(courseId);
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Course Explorer')),
+      appBar: AppBar(
+        title: const Text('Course Explorer'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -79,25 +54,47 @@ class _CourseExplorerPageState extends State<CourseExplorerPage> {
                   SizedBox(height: 4),
                   Text('NIM: $studentId'),
                   SizedBox(height: 8),
-                  Text('Praktikum Pertemuan 6 - Tahap 3'),
+                  Text('Praktikum Pertemuan 6 - Tahap 4'),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
-          // Child pertama menerima data dan callback dari parent.
-          CourseListChild(
-            favorites: _favorites,
-            onToggleFavorite: _toggleFavorite,
-          ),
+          const FavoriteCounter(),
 
           const SizedBox(height: 16),
 
-          // Child kedua menerima sumber data dan callback yang sama.
-          FavoriteSummaryChild(
-            favorites: _favorites,
-            onToggleFavorite: _toggleFavorite,
+          const Text(
+            'Daftar Kursus',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+
+          const CourseTile(
+            title: 'Flutter Dasar',
+            category: 'Mobile Development',
+            icon: Icons.phone_android,
+          ),
+          const CourseTile(
+            title: 'Pemrograman Dart',
+            category: 'Programming',
+            icon: Icons.code,
+          ),
+          const CourseTile(
+            title: 'UI/UX Design',
+            category: 'User Interface',
+            icon: Icons.design_services,
+          ),
+          const CourseTile(
+            title: 'State Management',
+            category: 'Flutter Architecture',
+            icon: Icons.account_tree,
+          ),
+          const CourseTile(
+            title: 'Database Dasar',
+            category: 'Data Management',
+            icon: Icons.storage,
           ),
         ],
       ),
@@ -105,16 +102,28 @@ class _CourseExplorerPageState extends State<CourseExplorerPage> {
   }
 }
 
-// CHILD 1: membaca favorites, tidak memiliki salinan state sendiri.
-class CourseListChild extends StatelessWidget {
-  final Set<String> favorites;
-  final ValueChanged<String> onToggleFavorite;
+class FavoriteCounter extends StatefulWidget {
+  const FavoriteCounter({super.key});
 
-  const CourseListChild({
-    super.key,
-    required this.favorites,
-    required this.onToggleFavorite,
-  });
+  @override
+  State<FavoriteCounter> createState() => _FavoriteCounterState();
+}
+
+class _FavoriteCounterState extends State<FavoriteCounter> {
+  // ValueNotifier menyimpan satu nilai yang dapat diamati.
+  late final ValueNotifier<int> favoriteCount;
+
+  @override
+  void initState() {
+    super.initState();
+    favoriteCount = ValueNotifier<int>(0);
+  }
+
+  @override
+  void dispose() {
+    favoriteCount.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,30 +134,55 @@ class CourseListChild extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Daftar Kursus',
+              'Eksperimen ValueNotifier',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            ...courses.map((course) {
-              final id = course['id']!;
-              final isFavorite = favorites.contains(id);
+            const SizedBox(height: 12),
 
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(course['title']!),
-                subtitle: Text(course['category']!),
-                trailing: IconButton(
-                  tooltip: isFavorite
-                      ? 'Hapus dari favorit'
-                      : 'Tambahkan ke favorit',
-                  onPressed: () => onToggleFavorite(id),
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : null,
+            // Hanya bagian ini yang mendengarkan perubahan nilai.
+            ValueListenableBuilder<int>(
+              valueListenable: favoriteCount,
+              builder: (context, value, child) {
+                return Row(
+                  children: [
+                    const Icon(Icons.favorite, color: Colors.red, size: 30),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Jumlah Favorit: $value',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      favoriteCount.value++;
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('+1 Favorit'),
                   ),
                 ),
-              );
-            }),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () {
+                    favoriteCount.value = 0;
+                  },
+                  child: const Text('Reset'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -156,53 +190,27 @@ class CourseListChild extends StatelessWidget {
   }
 }
 
-// CHILD 2: membaca data favorites yang sama.
-class FavoriteSummaryChild extends StatelessWidget {
-  final Set<String> favorites;
-  final ValueChanged<String> onToggleFavorite;
+class CourseTile extends StatelessWidget {
+  final String title;
+  final String category;
+  final IconData icon;
 
-  const FavoriteSummaryChild({
+  const CourseTile({
     super.key,
-    required this.favorites,
-    required this.onToggleFavorite,
+    required this.title,
+    required this.category,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    final favoriteCourses = courses
-        .where((course) => favorites.contains(course['id']))
-        .toList();
-
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Kursus Favorit (${favorites.length})',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            if (favoriteCourses.isEmpty)
-              const Text('Belum ada kursus favorit.')
-            else
-              ...favoriteCourses.map(
-                (course) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(course['title']!),
-                  trailing: IconButton(
-                    tooltip: 'Hapus dari favorit',
-                    onPressed: () => onToggleFavorite(course['id']!),
-                    icon: const Icon(
-                      Icons.remove_circle_outline,
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ),
-          ],
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(icon),
         ),
+        title: Text(title),
+        subtitle: Text(category),
       ),
     );
   }
