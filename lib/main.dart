@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'providers/course_provider.dart';
 import 'repositories/course_repository.dart';
 import 'services/course_service.dart';
+import 'screens/course_detail_page.dart';
+import 'screens/favorites_page.dart';
 
 const String studentName = 'Wayan Muizul Rozzak';
 const String studentId = '2415051111';
@@ -52,6 +54,18 @@ class CourseHomePage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
+            tooltip: 'Mata Kuliah Favorit',
+            icon: const Icon(Icons.favorite),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FavoritesPage(),
+                ),
+              );
+            },
+          ),
+          IconButton(
             tooltip: 'Muat ulang data',
             onPressed: state.isLoading
                 ? null
@@ -90,7 +104,7 @@ class CourseHomePage extends StatelessWidget {
                   Text('NIM: $studentId'),
                   SizedBox(height: 12),
                   Text(
-                    'Tahap 11: Provider untuk Async State',
+                    'Tahap 13: Shared Favorites di Beberapa Screen',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                     ),
@@ -99,7 +113,7 @@ class CourseHomePage extends StatelessWidget {
               ),
             ),
 
-            // Ringkasan jumlah data dan favorit
+            // Ringkasan jumlah mata kuliah dan favorit
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -127,7 +141,6 @@ class CourseHomePage extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Judul daftar
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Align(
@@ -144,7 +157,6 @@ class CourseHomePage extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // Kondisi asynchronous: loading, error, atau success
             Expanded(
               child: _buildCourseContent(context, state),
             ),
@@ -158,7 +170,7 @@ class CourseHomePage extends StatelessWidget {
     BuildContext context,
     CourseProvider state,
   ) {
-    // Kondisi 1: loading
+    // Kondisi loading
     if (state.isLoading) {
       return const Center(
         child: Column(
@@ -172,7 +184,7 @@ class CourseHomePage extends StatelessWidget {
       );
     }
 
-    // Kondisi 2: error
+    // Kondisi error
     if (state.error != null) {
       return Center(
         child: SingleChildScrollView(
@@ -201,9 +213,7 @@ class CourseHomePage extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () {
-                  context
-                      .read<CourseProvider>()
-                      .loadCourses();
+                  context.read<CourseProvider>().loadCourses();
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('Coba Lagi'),
@@ -214,19 +224,17 @@ class CourseHomePage extends StatelessWidget {
       );
     }
 
-    // Kondisi 3: data berhasil dimuat tetapi kosong
+    // Kondisi data kosong
     if (state.courses.isEmpty) {
       return const Center(
         child: Text('Belum ada data mata kuliah.'),
       );
     }
 
-    // Kondisi 4: success, tampilkan daftar
+    // Daftar mata kuliah
     return RefreshIndicator(
       onRefresh: () {
-        return context
-            .read<CourseProvider>()
-            .loadCourses();
+        return context.read<CourseProvider>().loadCourses();
       },
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -234,7 +242,7 @@ class CourseHomePage extends StatelessWidget {
         itemCount: state.courses.length,
         itemBuilder: (context, index) {
           final course = state.courses[index];
-          final isFavorite = state.isFavorite(course.title);
+          final isFavorite = state.isFavorite(course.code);
 
           return Card(
             margin: const EdgeInsets.only(bottom: 10),
@@ -263,6 +271,8 @@ class CourseHomePage extends StatelessWidget {
                 ),
               ),
               isThreeLine: true,
+
+              // Toggle favorit menggunakan course.code
               trailing: IconButton(
                 tooltip: isFavorite
                     ? 'Hapus dari favorit'
@@ -270,7 +280,7 @@ class CourseHomePage extends StatelessWidget {
                 onPressed: () {
                   context
                       .read<CourseProvider>()
-                      .toggleFavorite(course.title);
+                      .toggleFavorite(course.code);
                 },
                 icon: Icon(
                   isFavorite
@@ -279,6 +289,18 @@ class CourseHomePage extends StatelessWidget {
                   color: isFavorite ? Colors.red : null,
                 ),
               ),
+
+              // Buka halaman detail
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CourseDetailPage(
+                      course: course,
+                    ),
+                  ),
+                );
+              },
             ),
           );
         },

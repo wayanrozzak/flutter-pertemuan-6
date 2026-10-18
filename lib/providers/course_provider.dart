@@ -17,18 +17,27 @@ class CourseProvider extends ChangeNotifier {
 
   Set<String> get favorites => Set.unmodifiable(_favorites);
 
-  bool isFavorite(String courseTitle) {
-    return _favorites.contains(courseTitle);
+  // Memeriksa favorit berdasarkan kode mata kuliah.
+  bool isFavorite(String code) {
+    return _favorites.contains(code);
   }
 
-  void toggleFavorite(String courseTitle) {
-    if (_favorites.contains(courseTitle)) {
-      _favorites.remove(courseTitle);
+  // Mengubah status favorit dan memberi tahu semua screen.
+  void toggleFavorite(String code) {
+    if (_favorites.contains(code)) {
+      _favorites.remove(code);
     } else {
-      _favorites.add(courseTitle);
+      _favorites.add(code);
     }
 
     notifyListeners();
+  }
+
+  // Mengambil daftar mata kuliah yang menjadi favorit.
+  List<Course> get favoriteCourses {
+    return courses
+        .where((course) => _favorites.contains(course.code))
+        .toList();
   }
 
   Future<void> loadCourses() async {
