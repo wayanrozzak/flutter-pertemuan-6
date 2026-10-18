@@ -24,14 +24,14 @@ class CourseProvider extends ChangeNotifier {
 
   // Mengubah status favorit dan memberi tahu semua screen.
   void toggleFavorite(String code) {
-    if (_favorites.contains(code)) {
-      _favorites.remove(code);
-    } else {
-      _favorites.add(code);
-    }
-
-    notifyListeners();
+  if (_favorites.contains(code)) {
+    _favorites.remove(code);
+  } else {
+    _favorites.add(code);
   }
+
+  notifyListeners();
+}
 
   // Mengambil daftar mata kuliah yang menjadi favorit.
   List<Course> get favoriteCourses {
