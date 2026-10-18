@@ -104,7 +104,7 @@ class CourseHomePage extends StatelessWidget {
                   Text('NIM: $studentId'),
                   SizedBox(height: 12),
                   Text(
-                    'Tahap 13: Shared Favorites di Beberapa Screen',
+                    'Tahap 14: Mini Project Integrasi - Course Explorer v2',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                     ),
