@@ -1,0 +1,35 @@
+
+{
+  "courses": [
+    {
+      "code": "IF101",
+      "title": "Flutter Dasar",
+      "credits": 2,
+      "status": "Aktif"
+    },
+    {
+      "code": "IF102",
+      "title": "UI Fundamentals",
+      "credits": 3,
+      "status": "Aktif"
+    },
+    {
+      "code": "IF103",
+      "title": "State Management",
+      "credits": 3,
+      "status": "Aktif"
+    },
+    {
+      "code": "IF104",
+      "title": "Mobile Application Architecture",
+      "credits": 3,
+      "status": "Aktif"
+    },
+    {
+      "code": "IF105",
+      "title": "Database Mobile",
+      "credits": 3,
+      "status": "Aktif"
+    }
+  ]
+}
