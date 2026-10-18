@@ -2,13 +2,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'course_state.dart';
-import 'models/course.dart';
+import 'providers/course_provider.dart';
+import 'repositories/course_repository.dart';
+import 'services/course_service.dart';
+
+const String studentName = 'Wayan Muizul Rozzak';
+const String studentId = '2415051111';
 
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseState(),
+      create: (_) => CourseProvider(
+        CourseRepository(CourseService()),
+      )..loadCourses(),
       child: const CourseExplorerApp(),
     ),
   );
@@ -20,7 +26,7 @@ class CourseExplorerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Course Explorer',
+      title: 'Flutter UI Fundamentals',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -28,76 +34,297 @@ class CourseExplorerApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const CourseExplorerPage(),
+      home: const CourseHomePage(),
     );
   }
 }
 
-class CourseExplorerPage extends StatelessWidget {
-  const CourseExplorerPage({super.key});
+class CourseHomePage extends StatelessWidget {
+  const CourseHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // WATCH: UI mendengarkan perubahan state dari Provider.
-    final courseState = context.watch<CourseState>();
-    final courses = courseState.courses;
-    final favoriteCount = courseState.favorites.length;
+    final state = context.watch<CourseProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Course Explorer'),
-        backgroundColor:
-            Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Flutter UI Fundamentals'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'Muat ulang data',
+            onPressed: state.isLoading
+                ? null
+                : () {
+                    context.read<CourseProvider>().loadCourses();
+                  },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Identitas mahasiswa dan informasi tahap
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Wayan Muizul Rozzak',
+                    studentName,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 4),
-                  Text('NIM: 2415051111'),
-                  SizedBox(height: 8),
-                  Text('Tahap 10: Repository Pattern'),
+                  Text('NIM: $studentId'),
+                  SizedBox(height: 12),
+                  Text(
+                    'Tahap 11: Provider untuk Async State',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
 
-          const SizedBox(height: 16),
-
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+            // Ringkasan jumlah data dan favorit
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.favorite,
-                    color: Colors.red,
-                    size: 30,
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Jumlah Favorit',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  Expanded(
+                    child: _SummaryCard(
+                      icon: Icons.menu_book,
+                      title: 'Mata Kuliah',
+                      value: state.courses.length.toString(),
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _SummaryCard(
+                      icon: Icons.favorite,
+                      title: 'Favorit',
+                      value: state.favorites.length.toString(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Judul daftar
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Daftar Mata Kuliah',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Kondisi asynchronous: loading, error, atau success
+            Expanded(
+              child: _buildCourseContent(context, state),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCourseContent(
+    BuildContext context,
+    CourseProvider state,
+  ) {
+    // Kondisi 1: loading
+    if (state.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Memuat data mata kuliah...'),
+          ],
+        ),
+      );
+    }
+
+    // Kondisi 2: error
+    if (state.error != null) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 56,
+                color: Colors.red,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Gagal Memuat Data',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                state.error!,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  context
+                      .read<CourseProvider>()
+                      .loadCourses();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Coba Lagi'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Kondisi 3: data berhasil dimuat tetapi kosong
+    if (state.courses.isEmpty) {
+      return const Center(
+        child: Text('Belum ada data mata kuliah.'),
+      );
+    }
+
+    // Kondisi 4: success, tampilkan daftar
+    return RefreshIndicator(
+      onRefresh: () {
+        return context
+            .read<CourseProvider>()
+            .loadCourses();
+      },
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+        itemCount: state.courses.length,
+        itemBuilder: (context, index) {
+          final course = state.courses[index];
+          final isFavorite = state.isFavorite(course.title);
+
+          return Card(
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              leading: CircleAvatar(
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer,
+                child: const Icon(Icons.school),
+              ),
+              title: Text(
+                course.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  '${course.code} • ${course.credits} SKS'
+                  '\nStatus: ${course.status}',
+                ),
+              ),
+              isThreeLine: true,
+              trailing: IconButton(
+                tooltip: isFavorite
+                    ? 'Hapus dari favorit'
+                    : 'Tambahkan ke favorit',
+                onPressed: () {
+                  context
+                      .read<CourseProvider>()
+                      .toggleFavorite(course.title);
+                },
+                icon: Icon(
+                  isFavorite
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : null,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+
+  const _SummaryCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 16,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 28,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    '$favoriteCount',
+                    title,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -106,142 +333,8 @@ class CourseExplorerPage extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-
-          const SizedBox(height: 16),
-
-          const Text(
-            'Daftar Course',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          if (courseState.isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (courseState.errorMessage != null)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(courseState.errorMessage!),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<CourseState>().loadCourses();
-                      },
-                      child: const Text('Coba Lagi'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (courses.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Belum ada data course.'),
-            )
-          else
-            ...courses.map((Course course) {
-              final isFavorite =
-                  courseState.isFavorite(course.title);
-
-              return Card(
-                child: ListTile(
-                  leading: const Icon(Icons.menu_book),
-                  title: Text(course.title),
-                  subtitle: Text(
-                    '${course.code} • ${course.credits} SKS • '
-                    '${course.status}',
-                  ),
-                  trailing: IconButton(
-                    tooltip: isFavorite
-                        ? 'Hapus dari favorit'
-                        : 'Tambah ke favorit',
-                    icon: Icon(
-                      isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : null,
-                    ),
-                    // READ: mengambil Provider untuk menjalankan aksi.
-                    onPressed: () {
-                      context
-                          .read<CourseState>()
-                          .toggleFavorite(course.title);
-                    },
-                  ),
-                ),
-              );
-            }),
-
-          const SizedBox(height: 16),
-
-          Consumer<CourseState>(
-            builder: (context, state, child) {
-              final favorites = state.favorites.toList();
-
-              return Card(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Ringkasan Favorit',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      if (favorites.isEmpty)
-                        const Text(
-                          'Belum ada course favorit.',
-                        )
-                      else
-                        ...favorites.map(
-                          (courseTitle) => Padding(
-                            padding:
-                                const EdgeInsets.symmetric(
-                              vertical: 3,
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.check_circle,
-                                  size: 18,
-                                  color: Colors.green,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(courseTitle),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
