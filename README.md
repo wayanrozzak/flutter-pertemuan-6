@@ -1,17 +1,23 @@
-# flutter_pertemuan_6
+## Tahap 16: Audit Architecture dan Dependency Direction
 
-A new Flutter project.
+### Tanggung Jawab Setiap Folder
 
-## Getting Started
+- **models/**: Mendefinisikan struktur data mata kuliah melalui class `Course`.
+- **services/**: Membaca file JSON menggunakan `rootBundle`, memproses JSON dengan `jsonDecode`, dan mengubah data menjadi objek `Course`.
+- **repositories/**: Menjadi perantara antara Provider dan Service dalam pengambilan data.
+- **providers/**: Mengelola state aplikasi, termasuk daftar mata kuliah, loading, error, dan favorit menggunakan `ChangeNotifier`.
+- **screens/**: Menyediakan halaman utama, detail mata kuliah, dan daftar favorit.
+- **widgets/**: Menyimpan komponen UI yang dapat digunakan kembali.
+- **assets/data/**: Menyimpan file JSON sebagai sumber data mata kuliah.
 
-This project is a starting point for a Flutter application.
+### Arah Dependency
 
-A few resources to get you started if this is your first Flutter project:
+Arah dependency aplikasi adalah:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+`Screens/Widgets → Provider → Repository → Service/Data Source`
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Pemisahan ini membuat setiap layer memiliki tanggung jawab yang jelas. Screen tidak membaca JSON secara langsung, Service tidak menangani UI, dan Provider tidak menyimpan `BuildContext` sebagai state.
+
+### Hasil Audit
+
+Pemeriksaan kode menunjukkan bahwa penggunaan `rootBundle` dan `jsonDecode` ditemukan pada `course_service.dart`, sedangkan pencarian `BuildContext` pada folder `providers` tidak menemukan hasil. Hal ini menunjukkan bahwa kedua bagian tersebut telah mengikuti prinsip pemisahan tanggung jawab yang diharapkan.
